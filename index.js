@@ -20,7 +20,10 @@ const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology:
 
 client.connect(err => {
   const serviceCollection = client.db(`${process.env.DB_NAME}`).collection("service");
-   console.log('databse connected successfully')
+  const addminCollection = client.db(`${process.env.DB_NAME}`).collection("admin");
+  const userCollection = client.db(`${process.env.DB_NAME}`).collection("userdata");
+  const reviewCollection = client.db(`${process.env.DB_NAME}`).collection("review");
+   
 
     app.post("/addService", (req, res) => {
       const file = req.files.file;
@@ -46,6 +49,41 @@ client.connect(err => {
       .toArray((arr, service) => {
         res.send(service)
       })
+    });
+
+
+    app.post("/makeAddmin", (req, res) => {
+      const email = req.body.email;
+      addminCollection.insertOne({email:email})
+      .then(result => {
+        res.send(result.insertedCount > 0)
+      } )
+    });
+
+    app.post('/isAdmins', (req, res) => {
+      const email = req.body.email;
+      addminCollection.find({email: email}) 	
+      .toArray((err , admins) => {
+        res.send(admins.length > 0)
+      } )
+    });
+
+
+    app.post('/addReview', (req, res) => {
+     const review = req.body.review;
+     console.log(review)
+     reviewCollection.insertOne({review:review})	
+     .then(result => {
+       res.send(result.insertedCount > 0)
+     })
+    });
+
+
+    app.get('/review', (req, res) => {
+         reviewCollection.find({})
+         .toArray((err, review) => {
+           res.send(review)
+         })	
     });
 
 });
